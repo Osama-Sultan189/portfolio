@@ -241,3 +241,42 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+
+document.getElementById('contact-form').addEventListener('submit', function(event) {
+  event.preventDefault();
+
+  document.querySelector('.loading').style.display = 'block';
+  document.querySelector('.error-message').style.display = 'none';
+  document.querySelector('.sent-message').style.display = 'none';
+
+  const form = event.target;
+  const formData = new FormData(form);
+
+  fetch(form.action, {
+    method: 'POST',
+    body: formData,
+    headers: {
+      'Accept': 'application/json'
+    }
+  }).then(response => {
+    document.querySelector('.loading').style.display = 'none'; // Hide loading spinner
+
+    if (response.ok) {
+      document.querySelector('.sent-message').style.display = 'block';
+      form.reset();
+    } else {
+      return response.json().then(data => {
+        if (data.errors) {
+          document.querySelector('.error-message').textContent = data.errors.map(error => error.message).join(", ");
+        } else {
+          document.querySelector('.error-message').textContent = 'Oops! There was a problem submitting the form.';
+        }
+        document.querySelector('.error-message').style.display = 'none';
+      });
+    }
+  }).catch(error => {
+    document.querySelector('.loading').style.display = 'none';
+    document.querySelector('.error-message').textContent = 'There was a problem submitting the form. Please try again later.';
+    document.querySelector('.error-message').style.display = 'none';
+  });
+});
